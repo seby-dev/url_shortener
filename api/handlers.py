@@ -1,6 +1,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from flask import Flask, request, jsonify, redirect
+import os
+from flask import Flask, request, jsonify, redirect, send_file
 
 from service.url_generator import URLGeneratorService, AliasConflictError, InvalidURLError
 from service.redirector import RedirectorService, NotFoundError, GoneError
@@ -93,21 +94,30 @@ def redirect_short(short_key):
         return jsonify({'error': 'Internal Server Error'}), 500
 
 
+@app.route('/docs', methods=['GET'])
+def api_docs():
+    """
+    Serves the API documentation file.
 
+    Responses:
+      200: API documentation file
+      404: Documentation file not found
+    """
+    try:
+        # Get the absolute path to the API.md file
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        doc_path = os.path.join(base_dir, 'API.md')
 
+        # Check if the file exists
+        if not os.path.exists(doc_path):
+            return jsonify({'error': 'Documentation not found'}), 404
 
+        # Serve the file
+        return send_file(doc_path, mimetype='text/markdown')
+
+    except Exception:
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 
 if __name__ == '__main__':
     app.run(host='localhost', port=5000, debug=True)
-
-
-
-
-
-
-
-
-
-
-
